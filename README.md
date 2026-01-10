@@ -14,13 +14,13 @@
 
 ## 2. 전체 아키텍처 흐름
 
-[ Client (Browser) ]
-↓
-[ Next.js (Frontend) ]
-↓ REST API (JSON)
-[ Spring Boot (Backend) ]
-↓
-[ Database (PostgreSQL) ]
+- [ Client (Browser) ]
+- ↓
+- [ Next.js (Frontend) ]
+- ↓ REST API (JSON)
+- [ Spring Boot (Backend) ]
+- ↓
+- [ Database (PostgreSQL) ]
 
 
 - Next.js: UI 렌더링 및 API 호출 담당
