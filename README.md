@@ -1,112 +1,279 @@
-📌 프로젝트 규약 (JPA 규약)
-1️⃣ Entity 외부 노출 금지 (필수)
-✅ 규칙
+Next.js + Spring Boot 프로젝트 규약 및 전반 흐름
+1. 프로젝트 개요
 
-Controller / API 응답에 Entity 사용 금지
+프로젝트 형태: 4인 팀 협업 웹 서비스
 
-반드시 DTO만 사용
+프론트엔드: Next.js (App Router)
 
-🎯 이유
+백엔드: Spring Boot (REST API)
 
-Lazy 로딩 폭발 방지
+DB: PostgreSQL
 
-필드 추가/변경 시 API 깨짐 방지
+서버: AWS
 
-보안 사고 예방
+2. 전체 아키텍처 흐름
+[ Client (Browser) ]
+        ↓
+[ Next.js (Frontend) ]
+        ↓  REST API (JSON)
+[ Spring Boot (Backend) ]
+        ↓
+[ Database (PostgreSQL) ]
 
-// ❌ 잘못된 예
-public User getUser() {}
 
-// ⭕ 올바른 예
-public UserResponseDto getUser() {}
+Next.js는 UI 렌더링 + API 호출 담당
 
-2️⃣ 연관관계는 기본 LAZY (강제)
-✅ 규칙
+Spring Boot는 비즈니스 로직 + DB 처리 담당
 
-@ManyToOne(fetch = FetchType.LAZY)
+모든 데이터 교환은 JSON 기반 REST API로 통신
 
-EAGER 사용 금지
+3. Git & 브랜치 전략
+3.1 브랜치 구성
 
-필요한 경우만 fetch join 사용
+MASTER : 배포 가능한 안정 브랜치
 
-🎯 이유
+develop : 개발 통합 브랜치
 
-N+1 문제 방지
+ST : ST용 브런치
 
-예측 불가능한 쿼리 차단
+LT : LT용 브런치
 
-3️⃣ 트랜잭션은 Service 계층에만
-✅ 규칙
+feature/{기능명} : 기능 단위 개발 브랜치 (이 브런치에서 UT실시할것)
 
-@Transactional → Service 계층에만 사용
+hotfix/{이슈명} : 긴급 수정 (이 브런치에서 UT실시할것)
 
-Controller / Repository 사용 금지
+3.2 작업 흐름
 
-@Service
-@Transactional
-public class UserServiceImpl {}
+develop에서 개발브랜치 생성
 
-4️⃣ Entity에 Setter 금지 (부분 허용)
-✅ 규칙
+기능 개발 후 Pull Request 생성
 
-무분별한 setter 사용 금지
+개발 브런치에서 UT실시
 
-의미 있는 메서드만 허용
+코드 리뷰 1명 이상 승인 필수 //선택
 
-// ❌
-user.setEmail(email);
+UT브런치 작업물을 LT브런치 머지후 LT실시
 
-// ⭕
-user.changeEmail(email);
+LT브런치 작업물을 ST브런치에 머지후 ST실시
 
-5️⃣ 조회 전용 API도 DTO 변환
-✅ 규칙
+3.3 민감 정보 관리
 
-조회 API라도 Entity 그대로 반환 금지
+코드에 API 키, DB 비밀번호 등 민감 정보 절대 하드코딩 금지
 
-반드시 DTO로 변환
+.env 파일 또는 application.properties 등 환경 변수로 관리
 
-6️⃣ 복잡한 조회는 JPA로 억지로 하지 않는다
-✅ 기준
+.gitignore에 민감 정보 파일 포함하여 Git에 커밋되지 않도록 설정
 
-3개 이상 JOIN
+공개 저장소(GitHub 등)에 민감 정보 절대 업로드 금지
 
-통계 / 리포트 / 복잡한 페이징
+필요 시 AWS Secrets Manager, GitHub Secret 등 보안 도구 활용
 
-👉 MyBatis 또는 QueryDSL 사용
+4. 커밋 메시지 규칙
 
-7️⃣ N+1 체크 규칙
-✅ 규칙
+ex)
 
-리스트 조회 시 반드시
+feat: 로그인 API 구현
+fix: 회원가입 validation 오류 수정
+refactor: 사용자 서비스 구조 개선
 
-fetch join 사용
 
-또는 DTO Projection 사용
+feat : 신규 기능
 
-🔎 리뷰 포인트
+fix : 버그 수정
 
-forEach(getX()) 코드가 보이면 N+1 의심
+refactor : 리팩토링
 
-8️⃣ equals / hashCode 규칙
-✅ 규칙
+docs : 문서 수정
 
-식별자(id) 기준으로 구현
+chore : 설정/빌드 관련
 
-엔티티 전체 필드 사용 금지 ❌
+6. 백엔드 규약 (Spring Boot)
+6.1 패키지 구조
+com.example.project
+ ├─ controller
+ │   └─ user
+ │       └─ UserController.java
+ │
+ ├─ service
+ │   └─ user
+ │       ├─ UserService.java
+ │       └─ UserServiceImpl.java
+ │
+ ├─ repository
+ │   └─ user
+ │       ├─ UserRepository.java          // JPA Repository
+ │       ├─ UserRepositoryCustom.java    // JPA 커스텀 (QueryDSL 등)
+ │       └─ UserRepositoryImpl.java
+ │
+ ├─ mapper                // ⭐ MyBatis 전용
+ │   └─ user
+ │       ├─ UserMapper.java              // Mapper 인터페이스
+ │       └─ UserMapper.xml               // SQL
+ │
+ ├─ domain
+ │   └─ user
+ │       ├─ User.java
+ │       ├─ UserPolicy.java
+ │       └─ UserValidator.java
+ │
+ ├─ dto
+ │   └─ user
+ │       ├─ UserRequestDto.java
+ │       ├─ UserResponseDto.java
+ │       └─ UserSummaryDto.java
+ │
+ ├─ exception
+ │   ├─ GlobalExceptionHandler.java
+ │   ├─ BusinessException.java
+ │   └─ ErrorCode.java
+ │
+ └─ config
+     ├─ JpaConfig.java
+     ├─ MyBatisConfig.java
+     ├─ WebConfig.java
+     └─ SecurityConfig.java
 
-9️⃣ 영속성 컨텍스트 신뢰, save 남발 금지
-✅ 규칙
+6.2 아키텍처 & 코딩 규칙 (패키지 구조 기반)
+1. Controller (controller)
 
-변경 감지는 트랜잭션 내부에서만
+요청(Request)과 응답(Response)만 처리.
 
-명시적 save는 생성 시에만 사용
+비즈니스 로직은 Service로 위임.
 
-🔟 패키지 의존 방향 고정
-Controller → Service → Domain → Repository
+URI 설계 및 HTTP 상태코드 관리.
 
-✅ 규칙
+2. Service (service)
 
-역참조 금지
+핵심 비즈니스 로직 집중.
 
-Domain이 Service 의존 ❌
+트랜잭션 관리(@Transactional)는 Service 계층에서 처리.
+
+Repository 또는 Mapper를 통해 데이터 접근.
+
+인터페이스(UserService)와 구현체(UserServiceImpl)를 분리하여 테스트 용이성 확보.
+
+3. Repository (repository)
+
+JPA 기반 데이터 접근 계층.
+
+기본 CRUD는 JpaRepository 또는 CrudRepository 사용.
+
+복잡한 쿼리나 동적 쿼리는 커스텀 Repository(UserRepositoryCustom + UserRepositoryImpl) 사용.
+
+역할: Entity 단위 데이터 조작, Service 계층에 데이터 제공.
+
+4. Mapper (mapper) ⭐ MyBatis 전용
+
+MyBatis SQL Mapper 전용 패키지.
+
+Mapper 인터페이스(UserMapper)와 XML(UserMapper.xml) 분리.
+
+SQL 중심의 복잡한 쿼리 처리.
+
+JPA와 혼용 시 역할 명확히 구분.
+
+5. Domain (domain)
+
+Entity 및 도메인 로직 관리.
+
+Validator, Policy, 도메인 규칙 등 포함.
+
+Entity와 DTO를 명확히 분리.
+
+User.java: DB Entity
+
+UserPolicy.java: 비즈니스 정책
+
+UserValidator.java: 도메인 유효성 검증
+
+6. DTO (dto)
+
+요청(Request) 및 응답(Response) 데이터 전송 객체.
+
+Controller ↔ Service 계층 사이에서 데이터 전달.
+
+Entity와 분리하여 API 응답 구조 유연하게 관리.
+
+UserRequestDto.java: 입력 데이터
+
+UserResponseDto.java: 단일 응답
+
+UserSummaryDto.java: 요약 응답
+
+7. Exception (exception)
+
+전역 예외 처리 및 커스텀 예외 정의.
+
+GlobalExceptionHandler.java: @ControllerAdvice 사용
+
+BusinessException.java: 비즈니스 예외
+
+ErrorCode.java: 공통 에러 코드 관리
+
+8. Config (config)
+
+프로젝트 전반 설정 관리.
+
+JpaConfig.java: JPA 설정
+
+MyBatisConfig.java: MyBatis 설정
+
+WebConfig.java: MVC, CORS, Interceptor 등
+
+SecurityConfig.java: Spring Security 설정
+
+7. API 규약
+7.1 URL 규칙
+
+/api/v1/... 형태 사용
+
+명사는 복수형 사용
+
+GET    /api/v1/users
+POST   /api/v1/users
+GET    /api/v1/users/{id}
+
+7.2 API 응답 포맷
+{
+  "success": true,
+  "data": {...},
+  "message": null
+}
+
+
+에러 응답:
+
+{
+  "success": false,
+  "data": null,
+  "message": "INVALID_REQUEST"
+}
+
+8. 개발 진행 흐름
+단계	내용	산출물
+1	요구사항 정리	요구사항 명세서, 기능 설명서, 화면 설계 초안, 화면전환도
+2	기본설계	API 명세서 ※API명세서 시트 참조, 테이블정의서, 공통예외/에러 처리 규칙 문서
+3	상세설계	상세설계서 ※상세설계서 시트 참조
+4	백엔드 API 개발	코드, DB 스키마/초기 데이터 스크립트
+5	UT(pgm,기능단위 ex서비스,도메인)	UT사양서, 테스트코드, 테스트결과
+6	LT(화면에서api호출)	LT사양서, 테스트코드, 테스트결과
+7	ST(업무흐름전반)	ST사양서, 테스트코드, 테스트결과
+9. 협업 규칙
+
+일주일 1회 이상 진행 상황 공유
+
+PR은 작게, 기능 단위로 생성
+
+공통 규약 변경 시 문서 업데이트 필수
+
+애매한 구현은 혼자 결정하지 않고 공유
+
+10. 기타
+
+공통 상수 / Enum은 중앙 관리
+
+로그 레벨 구분 (INFO / WARN / ERROR)
+
+TODO는 이슈로 등록 후 처리
+
+※ 본 문서는 프로젝트 진행 중 지속적으로 업데이트한다.
