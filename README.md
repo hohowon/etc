@@ -1,19 +1,31 @@
 🚀 Next.js + Spring Boot 프로젝트 규약 및 전반 흐름
-1️⃣ 프로젝트 개요
-구분	내용
-프로젝트 형태	4인 팀 협업 웹 서비스
-프론트엔드	Next.js (App Router)
-백엔드	Spring Boot (REST API)
-DB	PostgreSQL
-서버	AWS
-2️⃣ 전체 아키텍처 흐름
+
+## 1️⃣ 프로젝트 개요
+
+| 구분 | 내용 |
+|------|------|
+| 프로젝트 형태 | 4인 팀 협업 웹 서비스 |
+| 프론트엔드 | Next.js (App Router) |
+| 백엔드 | Spring Boot (REST API) |
+| DB | PostgreSQL |
+| 서버 | AWS |
+
+## 2️⃣ 전체 아키텍처 흐름
+
 [ Client (Browser) ]
+
         ↓
+
 [ Next.js (Frontend) ]
+
         ↓  REST API (JSON)
+
 [ Spring Boot (Backend) ]
+
         ↓
+
 [ Database (PostgreSQL) ]
+
 
 역할 분리
 
@@ -23,7 +35,7 @@ Spring Boot → 비즈니스 로직 + DB 처리 담당
 
 모든 데이터 교환은 JSON 기반 REST API 통신
 
-3️⃣ Git & 브랜치 전략
+## 3️⃣ Git & 브랜치 전략
 📌 3.1 브랜치 구성
 브랜치	설명
 MASTER	배포 가능한 안정 브랜치
@@ -58,7 +70,7 @@ LT브런치 작업물을 ST브런치에 머지후 ST실시
 
 필요 시 AWS Secrets Manager, GitHub Secret 등 보안 도구 활용
 
-4️⃣ 커밋 메시지 규칙
+## 4️⃣ 커밋 메시지 규칙
 예시
 feat: 로그인 API 구현
 fix: 회원가입 validation 오류 수정
@@ -70,8 +82,9 @@ fix	버그 수정
 refactor	리팩토링
 docs	문서 수정
 chore	설정/빌드 관련
-5️⃣ 백엔드 규약 (Spring Boot)
+## 5️⃣ 백엔드 규약 (Spring Boot)
 📌 5.1 패키지 구조
+```
 com.example.project
  ├─ controller
  │   └─ user
@@ -115,79 +128,69 @@ com.example.project
      ├─ MyBatisConfig.java
      ├─ WebConfig.java
      └─ SecurityConfig.java
+```
 
-📌 5.2 아키텍처 & 코딩 규칙
-1️⃣ Controller
+### 📌 5.2 아키텍처 & 코딩 규칙
 
-요청(Request)과 응답(Response)만 처리
+##### 🔹 Controller
 
-비즈니스 로직은 Service로 위임
+- 요청(Request)과 응답(Response)만 처리
+- 비즈니스 로직은 Service로 위임
+- URI 설계 및 HTTP 상태코드 관리
 
-URI 설계 및 HTTP 상태코드 관리
+#### 🔹 Service
 
-2️⃣ Service
+- 핵심 비즈니스 로직 집중
+- @Transactional은 Service 계층에서 처리
+- Repository 또는 Mapper 통해 데이터 접근
+- 인터페이스/구현체 분리
 
-핵심 비즈니스 로직 집중
 
-@Transactional은 Service 계층에서 처리
+#### 🔹 Repository (JPA)
 
-Repository 또는 Mapper 통해 데이터 접근
+- JPA 기반 데이터 접근
+- 기본 CRUD는 JpaRepository 또는 CrudRepository 사용
+- 복잡한 쿼리는 Custom Repository 사용
+- Entity 단위 데이터 조작
 
-인터페이스/구현체 분리
 
-3️⃣ Repository (JPA)
+#### 🔹 Mapper (MyBatis)
 
-JPA 기반 데이터 접근
+- SQL 중심 복잡 쿼리 처리
+- 인터페이스 + XML 분리
+- JPA와 역할 명확히 구분
 
-기본 CRUD는 JpaRepository 또는 CrudRepository 사용
 
-복잡한 쿼리는 Custom Repository 사용
+#### 🔹 Domain
 
-Entity 단위 데이터 조작
+- Entity 및 도메인 로직 관리
+- Validator / Policy 포함
+- Entity와 DTO 명확히 분리
 
-4️⃣ Mapper (MyBatis)
 
-SQL 중심 복잡 쿼리 처리
+#### 🔹 DTO
 
-인터페이스 + XML 분리
+- Request / Response 전송 객체
+- Controller ↔ Service 간 데이터 전달
+- API 응답 구조 유연성 확보
 
-JPA와 역할 명확히 구분
 
-5️⃣ Domain
+#### 🔹 Exception
 
-Entity 및 도메인 로직 관리
+- 전역 예외 처리
+- @ControllerAdvice 사용
+- 공통 에러 코드 관리
 
-Validator / Policy 포함
 
-Entity와 DTO 명확히 분리
+#### 🔹 Config
 
-6️⃣ DTO
+- JPA 설정
+- MyBatis 설정
+- Web 설정 (CORS, Interceptor 등)
+- Security 설정
+- 
+### 6️⃣ API 규약
 
-Request / Response 전송 객체
-
-Controller ↔ Service 간 데이터 전달
-
-API 응답 구조 유연성 확보
-
-7️⃣ Exception
-
-전역 예외 처리
-
-@ControllerAdvice 사용
-
-공통 에러 코드 관리
-
-8️⃣ Config
-
-JPA 설정
-
-MyBatis 설정
-
-Web 설정 (CORS, Interceptor 등)
-
-Security 설정
-
-6️⃣ API 규약
 📌 URL 규칙
 
 /api/v1/... 형태 사용
@@ -199,6 +202,7 @@ POST   /api/v1/users
 GET    /api/v1/users/{id}
 
 📌 API 응답 포맷
+
 정상 응답
 {
   "success": true,
@@ -213,16 +217,18 @@ GET    /api/v1/users/{id}
   "message": "INVALID_REQUEST"
 }
 
-7️⃣ 개발 진행 흐름
-단계	내용	산출물
-1	요구사항 정리	요구사항 명세서, 기능 설명서, 화면 설계 초안, 화면전환도
-2	기본설계	API 명세서, 테이블정의서, 공통예외/에러 처리 규칙 문서
-3	상세설계	상세설계서
-4	백엔드 API 개발	코드, DB 스키마/초기 데이터 스크립트
-5	UT	UT사양서, 테스트코드, 테스트결과
-6	LT	LT사양서, 테스트코드, 테스트결과
-7	ST	ST사양서, 테스트코드, 테스트결과
-8️⃣ 협업 규칙
+## 7️⃣ 개발 진행 흐름
+
+| 단계 | 내용 | 산출물 |
+|------|------|--------|
+| 1 | 요구사항 정리 | 요구사항 명세서, 기능 설명서, 화면 설계 초안, 화면전환도 |
+| 2 | 기본설계 | API 명세서, 테이블정의서, 공통예외/에러 처리 규칙 문서 |
+| 3 | 상세설계 | 상세설계서 |
+| 4 | 백엔드 API 개발 | 코드, DB 스키마/초기 데이터 스크립트 |
+| 5 | UT | UT사양서, 테스트코드, 테스트결과 |
+| 6 | LT | LT사양서, 테스트코드, 테스트결과 |
+| 7 | ST | ST사양서, 테스트코드, 테스트결과 |
+## 8️⃣ 협업 규칙
 
 일주일 1회 이상 진행 상황 공유
 
@@ -232,7 +238,7 @@ PR은 작게, 기능 단위로 생성
 
 애매한 구현은 혼자 결정하지 않고 공유
 
-9️⃣ 기타
+## 9️⃣ 기타
 
 공통 상수 / Enum은 중앙 관리
 
