@@ -1,16 +1,20 @@
-🚀 Next.js + Spring Boot 프로젝트 규약 및 전반 흐름
+# 🚀 Next.js + Spring Boot プロジェクト規約および全体フロー
 
-## 1️⃣ 프로젝트 개요
+---
 
-| 구분 | 내용 |
+## 1️⃣ プロジェクト概要
+
+| 区分 | 内容 |
 |------|------|
-| 프로젝트 형태 | 4인 팀 협업 웹 서비스 |
-| 프론트엔드 | Next.js (App Router) |
-| 백엔드 | Spring Boot (REST API) |
+| プロジェクト形態 | 4人チーム協業Webサービス |
+| フロントエンド | Next.js（App Router） |
+| バックエンド | Spring Boot（REST API） |
 | DB | PostgreSQL |
-| 서버 | AWS |
+| サーバー | AWS |
 
-## 2️⃣ 전체 아키텍처 흐름
+---
+
+## 2️⃣ 全体アーキテクチャフロー
 
 [ Client (Browser) ]
 
@@ -27,63 +31,70 @@
 [ Database (PostgreSQL) ]
 
 
-역할 분리
+### 役割分離
 
-Next.js → UI 렌더링 + API 호출 담당
+- Next.js → UIレンダリング + API呼び出し担当  
+- Spring Boot → ビジネスロジック + DB処理担当  
+- すべてのデータ通信は JSON ベースの REST API を使用  
 
-Spring Boot → 비즈니스 로직 + DB 처리 담당
+---
 
-모든 데이터 교환은 JSON 기반 REST API 통신
+## 3️⃣ Git & ブランチ戦略
 
-## 3️⃣ Git & 브랜치 전략
-📌 3.1 브랜치 구성
-브랜치	설명
-MASTER	배포 가능한 안정 브랜치
-develop	개발 통합 브랜치
-ST	ST용 브런치
-LT	LT용 브런치
-feature/{기능명}	기능 단위 개발 브랜치 (이 브런치에서 UT실시할것)
-hotfix/{이슈명}	긴급 수정 (이 브런치에서 UT실시할것)
-📌 3.2 작업 흐름
+### 📌 3.1 ブランチ構成
 
-develop에서 개발브랜치 생성
+| ブランチ | 説明 |
+|----------|------|
+| master | 本番デプロイ可能な安定ブランチ |
+| develop | 開発統合ブランチ |
+| ST | ST用ブランチ |
+| LT | LT用ブランチ |
+| feature/{機能名} | 機能単位の開発ブランチ（このブランチでUT実施） |
+| hotfix/{イシュー名} | 緊急修正用（このブランチでUT実施） |
 
-기능 개발 후 Pull Request 생성
+---
 
-개발 브런치에서 UT실시
+### 📌 3.2 作業フロー
 
-코드 리뷰 1명 이상 승인 필수 //선택
+- develop から開発ブランチを作成  
+- 機能開発後、Pull Request を作成  
+- 開発ブランチで UT 実施  
+- コードレビュー1名以上の承認必須（任意）  
+- UTブランチの成果物を LTブランチへマージ後、LT実施  
+- LTブランチの成果物を STブランチへマージ後、ST実施  
 
-UT브런치 작업물을 LT브런치 머지후 LT실시
+---
 
-LT브런치 작업물을 ST브런치에 머지후 ST실시
+### 📌 3.3 機密情報管理
 
-📌 3.3 민감 정보 관리
+- APIキーやDBパスワードなどの機密情報をコードにハードコーディング禁止  
+- `.env` ファイルや `application.properties` などの環境変数で管理  
+- `.gitignore` に機密情報ファイルを追加  
+- 公開リポジトリ（GitHub等）へ機密情報を絶対にアップロードしない  
+- 必要に応じて AWS Secrets Manager、GitHub Secrets などのセキュリティツールを活用  
 
-코드에 API 키, DB 비밀번호 등 민감 정보 절대 하드코딩 금지
+---
 
-.env 파일 또는 application.properties 등 환경 변수로 관리
+## 4️⃣ コミットメッセージ規則
 
-.gitignore에 민감 정보 파일 포함
+### 例)
+feat: ログインAPI実装
 
-공개 저장소(GitHub 등)에 민감 정보 절대 업로드 금지
+fix: 会員登録バリデーションエラー修正
 
-필요 시 AWS Secrets Manager, GitHub Secret 등 보안 도구 활용
+refactor: ユーザーサービス構造改善
 
-## 4️⃣ 커밋 메시지 규칙
-예시
-feat: 로그인 API 구현
-fix: 회원가입 validation 오류 수정
-refactor: 사용자 서비스 구조 개선
 
-타입	설명
-feat	신규 기능
-fix	버그 수정
-refactor	리팩토링
-docs	문서 수정
-chore	설정/빌드 관련
-## 5️⃣ 백엔드 규약 (Spring Boot)
-📌 5.1 패키지 구조
+| 타입	| 설명| 
+|----------|------|
+| feat	| 新規| 
+| fix	| バグ修正| 
+| refactor	| リファクタリング| 
+| docs	| ドキュメント修正 |
+| chore | 設定／ビルド関連 |
+## 5️⃣ バックエンド規約（Spring Boot）
+
+### 📌 5.1 パッケージ構造
 ```
 com.example.project
  ├─ controller
@@ -130,80 +141,76 @@ com.example.project
      └─ SecurityConfig.java
 ```
 
-### 📌 5.2 아키텍처 & 코딩 규칙
+### 📌 5.2 アーキテクチャ & コーディング規則
 
-##### 🔹 Controller
+#### 🔹 Controller
 
-- 요청(Request)과 응답(Response)만 처리
-- 비즈니스 로직은 Service로 위임
-- URI 설계 및 HTTP 상태코드 관리
+- リクエスト（Request）とレスポンス（Response）のみ処理  
+- ビジネスロジックは Service へ委譲  
+- URI設計およびHTTPステータスコード管理  
 
 #### 🔹 Service
 
-- 핵심 비즈니스 로직 집중
-- @Transactional은 Service 계층에서 처리
-- Repository 또는 Mapper 통해 데이터 접근
-- 인터페이스/구현체 분리
+- コアビジネスロジックを担当  
+- `@Transactional` は Service 層で管理  
+- Repository または Mapper を通じてデータアクセス  
+- インターフェース／実装クラスを分離  
 
+#### 🔹 Repository（JPA）
 
-#### 🔹 Repository (JPA)
+- JPAベースのデータアクセス  
+- 基本CRUDは `JpaRepository` または `CrudRepository` 使用  
+- 複雑なクエリは Custom Repository 使用  
+- Entity単位でデータ操作  
 
-- JPA 기반 데이터 접근
-- 기본 CRUD는 JpaRepository 또는 CrudRepository 사용
-- 복잡한 쿼리는 Custom Repository 사용
-- Entity 단위 데이터 조작
+#### 🔹 Mapper（MyBatis）
 
-
-#### 🔹 Mapper (MyBatis)
-
-- SQL 중심 복잡 쿼리 처리
-- 인터페이스 + XML 분리
-- JPA와 역할 명확히 구분
-
+- SQL中心の複雑クエリ処理  
+- インターフェース + XML 分離  
+- JPAとの役割を明確に区分  
 
 #### 🔹 Domain
 
-- Entity 및 도메인 로직 관리
-- Validator / Policy 포함
-- Entity와 DTO 명확히 분리
-
+- Entityおよびドメインロジック管理  
+- Validator / Policy を含む  
+- Entity と DTO を明確に分離  
 
 #### 🔹 DTO
 
-- Request / Response 전송 객체
-- Controller ↔ Service 간 데이터 전달
-- API 응답 구조 유연성 확보
-
+- Request / Response 転送オブジェクト  
+- Controller ↔ Service 間データ伝達  
+- APIレスポンス構造の柔軟性確保  
 
 #### 🔹 Exception
 
-- 전역 예외 처리
-- @ControllerAdvice 사용
-- 공통 에러 코드 관리
-
+- グローバル例外処理  
+- `@ControllerAdvice` 使用  
+- 共通エラーコード管理  
 
 #### 🔹 Config
 
-- JPA 설정
-- MyBatis 설정
-- Web 설정 (CORS, Interceptor 등)
-- Security 설정
-- 
-### 6️⃣ API 규약
+- JPA設定  
+- MyBatis設定  
+- Web設定（CORS、Interceptorなど）  
+- Security設定  
 
-📌 URL 규칙
+---
 
-/api/v1/... 형태 사용
+## 6️⃣ API規約
 
-명사는 복수형 사용
+### 📌 URL規則
+
+- `/api/v1/...` 形式使用  
+- 名詞は複数形使用  
+
 
 GET    /api/v1/users
 POST   /api/v1/users
 GET    /api/v1/users/{id}
 
-📌 API 응답 포맷
+### 📌 APIレスポンス形式
 
-정상 응답
+#### 正常レスポンス
 {
   "success": true,
   "data": {...},
